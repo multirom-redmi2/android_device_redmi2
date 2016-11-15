@@ -40,8 +40,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "property_service.h"
 #include "vendor_init.h"
+#include "property_service.h"
 #include "log.h"
 #include "util.h"
 
@@ -58,37 +58,20 @@
 
 static char board_id[32];
 
-static void import_kernel_nv(const std::string& key, const std::string& value, bool for_emulator) {
-
-    char in_str[32], *board_value, *ptr;
-    int count = 0;
-
-    // board_id=S88047C1:board_vol=1047620
-    // The above string can be broken down into three pieces
-    // key should contain "board_id" and value contains "S88047C1:board_vol"
-
-    if (strcmp(key.c_str(), "board_id")) {
-	/* not board_id */
-    	return;
+static void import_kernel_nv(char *name, int in_qemu)
+{
+    if (*name != '\0') {
+        char *value = strchr(name, '=');
+        if (value != NULL) {
+            *value++ = 0;
+            if (!strcmp(name,"board_id"))
+            {
+                const char s[2] = ":";
+                value = strtok(value, s);
+                strlcpy(board_id, value, sizeof(board_id));
+            }
+        }
     }
-
-    strncpy(in_str, value.c_str(), sizeof(in_str));
-    if (in_str[0] != '\0') {
-	ptr = in_str;
-	// delimiter or eol found
-	do {
-	    if (*ptr == ':') break;
-	    if (*ptr == '\0') break;
-	    ++count;
-	    ++ptr;
-	} while (ptr);
-
-	strncpy(board_id, value.c_str(), count);
-	board_id[count]='\0';
-	ERROR("\n **** READ BOARDID=%s **** \n",board_id);
-    }
-
-    return;
 }
 
 /* Boyer-Moore string search implementation from Wikipedia */
@@ -204,11 +187,12 @@ err_ret:
 
 void vendor_load_properties()
 {
+    char device[PROP_VALUE_MAX];
     char modem_version[IMG_VER_BUF_LEN];
     int rc;
 
-    std::string product = property_get("ro.product.name");
-    if ((strstr(product.c_str(), "wt88047") == NULL))
+    rc = property_get("ro.product.name", device);
+    if (!rc || (strstr(device, "wt88047") == NULL))
         return;
 
     import_kernel_cmdline(0, import_kernel_nv);
@@ -220,21 +204,21 @@ void vendor_load_properties()
         property_set("ro.product.device", "HM2014817");
         property_set("ro.product.model", "2014817");
         property_set("ro.product.name", "2014817");
-        property_set("ro.telephony.default_network", "9,9");
+        property_set("ro.telephony.default_network", "9,1");
         property_set("telephony.lteOnCdmaDevice", "0");
     } else if (strcmp(board_id, "S88047D1") == 0) {
         property_set("ro.build.product", "HM2014819");
         property_set("ro.product.device", "HM2014819");
         property_set("ro.product.model", "2014819");
         property_set("ro.product.name", "2014819");
-        property_set("ro.telephony.default_network", "9,9");
+        property_set("ro.telephony.default_network", "9,1");
         property_set("telephony.lteOnCdmaDevice", "0");
     } else if (strcmp(board_id, "S88047C1") == 0) {
         property_set("ro.build.product", "HM2014818");
         property_set("ro.product.device", "HM2014818");
         property_set("ro.product.model", "2014818");
         property_set("ro.product.name", "2014818");
-        property_set("ro.telephony.default_network", "9,9");
+        property_set("ro.telephony.default_network", "9,1");
         property_set("telephony.lteOnCdmaDevice", "0");
         property_set("persist.dbg.volte_avail_ovr", "1");
         property_set("persist.dbg.vt_avail_ovr", "1");
@@ -243,7 +227,7 @@ void vendor_load_properties()
         property_set("ro.product.device", "HM2014821");
         property_set("ro.product.model", "2014821");
         property_set("ro.product.name", "2014821");
-        property_set("ro.telephony.default_network", "22,22");
+        property_set("ro.telephony.default_network", "22,1");
         property_set("telephony.lteOnCdmaDevice", "1");
         property_set("persist.radio.sglte.eons_domain", "ps");
     } else if (strcmp(board_id, "S88047B1") == 0) {
@@ -251,7 +235,7 @@ void vendor_load_properties()
         property_set("ro.product.device", "HM2014812");
         property_set("ro.product.model", "2014812");
         property_set("ro.product.name", "2014812");
-        property_set("ro.telephony.default_network", "22,22");
+        property_set("ro.telephony.default_network", "22,1");
         property_set("telephony.lteOnCdmaDevice", "1");
         property_set("persist.radio.sglte.eons_domain", "ps");
     } else if ((strcmp(board_id, "S86047A1") == 0) || (strcmp(board_id, "S86047A1_CD") == 0)) {
@@ -259,21 +243,21 @@ void vendor_load_properties()
         property_set("ro.product.device", "HM2014813");
         property_set("ro.product.model", "2014813");
         property_set("ro.product.name", "2014813");
-        property_set("ro.telephony.default_network", "9,9");
+        property_set("ro.telephony.default_network", "9,1");
         property_set("telephony.lteOnCdmaDevice", "0");
     } else if ((strcmp(board_id, "S86047A2") == 0) || (strcmp(board_id, "S86047A2_CD") == 0)) {
         property_set("ro.build.product", "HM2014112");
         property_set("ro.product.device", "HM2014112");
         property_set("ro.product.model", "2014112");
         property_set("ro.product.name", "2014112");
-        property_set("ro.telephony.default_network", "9,9");
+        property_set("ro.telephony.default_network", "9,1");
         property_set("telephony.lteOnCdmaDevice", "0");
     } else { /* including S88047A2 and S88047A1 */
         property_set("ro.build.product", "HM2014811");
         property_set("ro.product.device", "HM2014811");
         property_set("ro.product.model", "2014811");
         property_set("ro.product.name", "2014811");
-        property_set("ro.telephony.default_network", "9,9");
+        property_set("ro.telephony.default_network", "9,1");
         property_set("telephony.lteOnCdmaDevice", "0");
     }
 
