@@ -165,6 +165,11 @@ on charger
    chmod 0664 /sys/class/power_supply/battery/current_now
    chmod 0664 /sys/class/power_supply/battery/voltage_now
 
+on fs
+    mount_all ./fstab.qcom
+    restorecon_recursive /persist
+    setprop ro.crypto.fuse_sdcard true
+
 on init
     export LD_SHIM_LIBS /system/vendor/lib/libWVStreamControlAPI_L3.so|libshim_boringssl.so
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1

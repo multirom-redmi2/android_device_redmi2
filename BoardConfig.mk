@@ -65,7 +65,7 @@ BOARD_KERNEL_SEPARATED_DT := true
 BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
 BOARD_RAMDISK_OFFSET     := 0x02000000
 TARGET_KERNEL_SOURCE := kernel/wingtech/msm8916
-TARGET_KERNEL_CONFIG := wt88047_kernel_defconfig
+TARGET_KERNEL_CONFIG := cyanogenmod_wt88047_defconfig
 ifneq ($(FORCE_32_BIT),true)
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_HEADER_ARCH := arm64
@@ -181,6 +181,8 @@ BOARD_USES_QCOM_HARDWARE := true
 TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/rootdir/etc/fstab.qcom
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
+BOARD_HAS_LARGE_FILESYSTEM := true
+BOARD_SUPPRESS_SECURE_ERASE := true
 
 # Releasetools
 TARGET_RELEASETOOLS_EXTENSIONS := $(DEVICE_PATH)
@@ -210,14 +212,46 @@ WIFI_DRIVER_FW_PATH_STA := "sta"
 WPA_SUPPLICANT_VERSION := VER_0_8_X
 
 # TWRP
-RECOVERY_VARIANT := twrp
 DEVICE_RESOLUTION := 720x1280
 TW_TARGET_USES_QCOM_BSP := false
 TW_NEW_ION_HEAP := true
-TARGET_RECOVERY_PIXEL_FORMAT := "RGBA_8888"
+TARGET_RECOVERY_PIXEL_FORMAT := "ABGR_8888"
 RECOVERY_GRAPHICS_USE_LINELENGTH := true
 TW_INCLUDE_CRYPTO := true
+BOARD_SUPPRESS_EMMC_WIPE := true
+TW_UNMOUNT_FIRMWARE_ON_BOOT := true
+TWHAVE_SELINUX := true
 RECOVERY_SDCARD_ON_DATA := true
+BOARD_SUPPRESS_SECURE_ERASE := true
+TARGET_RECOVERY_QCOM_RTC_FIX := true
+TW_BRIGHTNESS_PATH := /sys/class/leds/lcd-backlight/brightness
+TW_MAX_BRIGHTNESS := 255
+TW_DEFAULT_BRIGHTNESS := 70
+TW_DEFAULT_EXTERNAL_STORAGE := true
+TW_THEME := portrait_hdpi
+
+#MultiROM config. MultiROM also uses parts of TWRP config
+MR_CONTINUOUS_FB_UPDATE := true
+MR_DEV_BLOCK_BOOTDEVICE := true
+MR_NO_KEXEC := enabled
+MR_DPI := hdpi
+MR_DPI_FONT := 192
+MR_FSTAB := $(DEVICE_PATH)/multirom/mrom.fstab
+MR_INIT_DEVICES := $(DEVICE_PATH)/multirom/mr_init_devices.c
+MR_INPUT_TYPE := type_b
+MR_KEXEC_MEM_MIN := 0x85F00000
+MR_KEXEC_DTB := true
+MR_PIXEL_FORMAT := "ABGR_8888"
+MR_USE_MROM_FSTAB := true
+TARGET_RECOVERY_IS_MULTIROM := true
+
+#Force populating /dev/block/platform/7824900.sdhci/by-name
+#from the emmc
+MR_POPULATE_BY_NAME_PATH := "/dev/block/platform/7824900.sdhci/by-name"
+
+# copy mrom.fstab to /
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/multirom/mrom.fstab:root/mrom.fstab
 
 # inherit from the proprietary version
 -include vendor/wingtech/wt88047/BoardConfigVendor.mk
